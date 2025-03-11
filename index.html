@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>繁簡轉換咻咻</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+        .container { display: flex; flex-direction: column; align-items: center; max-width: 600px; margin: auto; }
+        .textarea-container { display: flex; flex-direction: column; width: 100%; }
+        textarea { width: 100%; height: 150px; padding: 10px; font-size: 16px; white-space: pre-wrap; margin-bottom: 10px; }
+        button { margin: 5px; padding: 8px 15px; font-size: 14px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>繁簡轉換咻咻</h2>
+    <div class="container">
+        <div class="textarea-container">
+            <textarea id="inputText" placeholder="輸入繁體文字..."></textarea>
+            <button onclick="pasteText()">貼上</button>
+            <button onclick="copyText()">複製</button>
+            <textarea id="outputText" readonly placeholder="這裡顯示簡體文字"></textarea>
+        </div>
+    </div>
+
+    <script>
+        async function convertText() {
+            const input = document.getElementById("inputText").value;
+            if (!input.trim()) {
+                document.getElementById("outputText").value = "";
+                return;
+            }
+
+            const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=zh-TW&tl=zh-CN&dt=t&q=${encodeURIComponent(input)}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                document.getElementById("outputText").value = data[0].map(x => x[0]).join('');
+            } catch (error) {
+                alert("轉換失敗，請檢查網路連線");
+            }
+        }
+
+        document.getElementById("inputText").addEventListener("input", convertText);
+
+        async function pasteText() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById("inputText").value = text;
+                convertText();
+            } catch (error) {
+                alert("無法讀取剪貼簿，請確保瀏覽器支援此功能");
+            }
+        }
+
+        async function copyText() {
+            try {
+                const text = document.getElementById("outputText").value;
+                await navigator.clipboard.writeText(text);
+                alert("已複製");
+            } catch (error) {
+                alert("複製失敗，請確保瀏覽器支援此功能");
+            }
+        }
+    </script>
+</body>
+</html>
